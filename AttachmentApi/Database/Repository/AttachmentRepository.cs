@@ -15,17 +15,22 @@ public class AttachmentRepository : IAttachmentRepository
 
     public async Task<Attachment?> GetById(int id)
     {
-        return await _db.Attachments.FirstOrDefaultAsync(i => i.Id == id);
+        return await _db.Attachments
+            .AsNoTracking()
+            .FirstOrDefaultAsync(i => i.Id == id);
     }
 
-    public async Task<Attachment?> GetByName(string name)
+    public async Task<ICollection<Attachment>> Pagination(uint size, uint page)
     {
-        return await _db.Attachments.FirstOrDefaultAsync(n => n.Extension == name);
-    }
+        var attacments = await _db.Attachments.AsNoTracking()
+            .Skip((int)size * ((int)page - 1))
+            .Take((int)size)
+            .ToListAsync();
 
-    public async Task<List<Attachment>> Select()
-    {
-        return await _db.Attachments.ToListAsync();
+        if (attacments.Count <= 0)
+            return new List<Attachment>();
+
+        return attacments;
     }
 
     public async Task<Attachment> Create(Attachment entity)

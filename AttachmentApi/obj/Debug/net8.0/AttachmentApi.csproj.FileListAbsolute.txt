@@ -105,3 +105,4 @@ C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\obj\Debug\net8.0\refint
 C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\obj\Debug\net8.0\AttachmentApi.pdb
 C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\obj\Debug\net8.0\AttachmentApi.genruntimeconfig.cache
 C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\obj\Debug\net8.0\ref\AttachmentApi.dll
+C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\obj\Debug\net8.0\AttachmentApi.sourcelink.json

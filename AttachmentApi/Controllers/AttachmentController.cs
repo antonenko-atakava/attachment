@@ -1,8 +1,6 @@
-using System.Text;
-using AttachmentApi.Database.DTO;
 using AttachmentApi.Service.Abstracts;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
+using Microsoft.Extensions.FileProviders;
 
 namespace AttachmentApi.Controllers;
 
@@ -11,10 +9,12 @@ namespace AttachmentApi.Controllers;
 public class AttachmentController : ControllerBase
 {
     private readonly IAttachmentService _service;
+    private readonly IFileProvider _fileProvider;
 
-    public AttachmentController(IAttachmentService service)
+    public AttachmentController(IAttachmentService service, IFileProvider fileProvider)
     {
         _service = service;
+        _fileProvider = fileProvider;
     }
 
     [HttpGet("get/id/{id}")]
@@ -24,37 +24,35 @@ public class AttachmentController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("get/name/{name}")]
-    public async Task<IActionResult> GetByName(string name)
+    [HttpGet("get/page/{page}/size/{size}")]
+    public async Task<IActionResult> Pagination(uint size, uint page)
     {
-        var result = await _service.GetByName(name);
+        var result = await _service.Pagination(size, page);
+
         return Ok(result);
     }
 
+    [HttpGet("download/id/{id}")]
+    public async Task<IActionResult> DownloadFile(int id)
+    {
+        var attachment = await _service.GetById(id);
+        var filePath = attachment.FilePath;
+
+        return File(System.IO.File.OpenRead(filePath), "application/octet-stream", Path.GetFileName(filePath));
+    }
+
     [HttpPost("upload")]
+    [RequestSizeLimit(100 * 1024 * 1024)]
     public async Task<IActionResult> Upload(IFormFile file)
     {
         var upload = await _service.Upload(file);
-
-        var client = new HttpClient();
-
-        var json = JsonConvert.SerializeObject(upload);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-        var response =
-            await client.PostAsync($"{Request.Scheme}://{Request.Host}{Request.PathBase}/api/Attachment/create",
-                content);
-
-        var responseData = await response.Content.ReadAsStringAsync();
-        var createdAttachment = JsonConvert.DeserializeObject<AttachmentDto>(responseData);
-        
-        return Ok(createdAttachment);
+        return Ok(upload);
     }
 
     [HttpPost("create")]
-    public async Task<IActionResult> Create([FromBody] AttachmentDto requset)
+    public async Task<IActionResult> Create(string request)
     {
-        var attachment = await _service.Create(requset);
+        var attachment = await _service.Create(request);
         return Ok(attachment);
     }
 

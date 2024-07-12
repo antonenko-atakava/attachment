@@ -7,6 +7,7 @@ using AttachmentApi.Middleware;
 using AttachmentApi.Service;
 using AttachmentApi.Service.Abstracts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,9 @@ builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+IFileProvider physicalProvider = new PhysicalFileProvider(Directory.GetCurrentDirectory());
+builder.Services.AddSingleton<IFileProvider>(physicalProvider);
 
 builder.Services.AddAutoMapper(typeof(MapperProfile));
 

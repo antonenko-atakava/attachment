@@ -6,7 +6,7 @@ namespace AttachmentApi.Infrastructure;
 public class FileCleanupService : BackgroundService
 {
     private readonly IServiceProvider _services;
-    private readonly TimeSpan _cleanupInterval = TimeSpan.FromMinutes(1);
+    private readonly TimeSpan _cleanupInterval = TimeSpan.FromMinutes(10);
 
     public FileCleanupService(IServiceProvider services)
     {

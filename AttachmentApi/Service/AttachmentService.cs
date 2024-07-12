@@ -16,7 +16,7 @@ public class AttachmentService : IAttachmentService
         _repository = repository;
         _mapper = mapper;
     }
-
+    
     public async Task<AttachmentDto> GetById(int id)
     {
         var attachment = await _repository.GetById(id);
@@ -25,38 +25,23 @@ public class AttachmentService : IAttachmentService
             throw new Exception("[Get attachment by id]: Не удалось вернуть attachment по id. Attachment = null");
 
         var result = _mapper.Map<AttachmentDto>(attachment);
-
+        
         return result;
     }
 
-    public async Task<AttachmentDto> GetByName(string name)
+    public async Task<ICollection<AttachmentDto>> Pagination(uint size, uint page)
     {
-        var attachment = await _repository.GetByName(name);
+        var attachments = await _repository.Pagination(size, page);
 
-        if (attachment == null)
-            throw new Exception("[Get attachment by name]: Не удалось вернуть attachment по name. Attachment = null");
+        if (attachments.Count <= 0)
+            return new List<AttachmentDto>();
 
-        var result = _mapper.Map<AttachmentDto>(attachment);
+        var attachmentsDto = _mapper.Map<ICollection<AttachmentDto>>(attachments);
 
-        return result;
+        return attachmentsDto;
     }
 
-    public async Task<List<AttachmentDto>> Select()
-    {
-        var attachments = await _repository.Select();
-
-        if (attachments.Count == 0)
-            throw new Exception("у вас нет ни одного вложения");
-
-        var results = new List<AttachmentDto>();
-
-        foreach (var attachment in attachments)
-            results.Add(_mapper.Map<AttachmentDto>(attachment));
-
-        return results;
-    }
-
-    public async Task<AttachmentDto> Upload(IFormFile file)
+    public async Task<string> Upload(IFormFile file)
     {
         if (file == null || file.Length == 0)
             throw new Exception("[Upload file]: отправленный файл равен null");
@@ -71,41 +56,48 @@ public class AttachmentService : IAttachmentService
         if (!allowedExtensions.Contains(extension))
             throw new Exception("[Upload file]: недопустимый формат файла.");
 
-        const int megabyte = 1024 * 1024;
-        int maxFileSize = 100 * megabyte;
-
-        if (file.Length > maxFileSize)
-            throw new Exception("Размер файла превышает 100 Мб.");
-
-        string folderPath = @"C:\FilesManager";
+        string folderPath = @"C:\Temp";
         var filePath = Path.Combine(folderPath, fileName);
 
         using (var stream = new FileStream(filePath, FileMode.Create))
             await file.CopyToAsync(stream);
 
-        var attachment = new AttachmentDto
-        {
-            Extension = fileName,
-            FileSize = file.Length,
-            FilePath = filePath,
-            CreateAt = DateTime.UtcNow,
-            Success = true
-        };
-
-        return attachment;
+        return filePath;
     }
 
-    public async Task<AttachmentDto> Create(AttachmentDto entity)
+    public async Task<AttachmentDto> Create(string filePath)
     {
-        var attachment = _mapper.Map<Attachment>(entity);
+        if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+            throw new FileNotFoundException("[Сreate file service]: временный файл не найден.");
 
-        if (attachment == null)
-            throw new Exception("[Create attachment]: невозможно создать attachment который равен null");
+        const string pathToFolder = @"C:\FilesManager";
+        DateTime currentDate = DateTime.UtcNow;
+
+        string currentFolder = Path.Combine(pathToFolder, currentDate.ToString("yyyy-MM-dd"));
+        Directory.CreateDirectory(currentFolder);
+
+        var fileName = Path.GetFileName(filePath);
+        var newFilePath = Path.Combine(currentFolder, fileName);
+
+        File.Move(filePath, newFilePath);
+
+        var fileInfo = new FileInfo(newFilePath);
+
+        var attachment = new Attachment
+        {
+            Extension = fileInfo.Name,
+            FilePath = newFilePath,
+            FileSize = fileInfo.Length,
+            CreateAt = DateTime.UtcNow,
+            Success = true,
+        };
 
         await _repository.Create(attachment);
         await _repository.SaveAsync();
 
-        return entity;
+        var attachmentDto = _mapper.Map<AttachmentDto>(attachment);
+
+        return attachmentDto;
     }
 
     public async Task<bool> Delete(int id)
@@ -114,6 +106,8 @@ public class AttachmentService : IAttachmentService
 
         if (attachment == null)
             throw new Exception("[Create attachment]: невозможно удалить attachment которого не существует");
+
+        File.Delete(attachment.FilePath);
 
         await _repository.Delete(attachment);
         await _repository.SaveAsync();

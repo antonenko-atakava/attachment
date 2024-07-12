@@ -5,8 +5,7 @@ namespace AttachmentApi.Database.Repository.Abstracts;
 public interface IAttachmentRepository
 {
     Task<Attachment?> GetById(int id);
-    Task<Attachment?> GetByName(string name);
-    Task<List<Attachment>> Select();
+    Task<ICollection<Attachment>> Pagination(uint size, uint page);
     Task<Attachment> Create(Attachment entity);
     Task<bool> Delete(Attachment entity);
     Task SaveAsync();
