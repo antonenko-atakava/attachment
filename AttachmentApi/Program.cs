@@ -1,13 +1,16 @@
+using System.IO;
 using AttachmentApi.Database;
 using AttachmentApi.Database.Repository;
 using AttachmentApi.Database.Repository.Abstracts;
-using AttachmentApi.Infrastructure;
 using AttachmentApi.Mapper;
 using AttachmentApi.Middleware;
 using AttachmentApi.Service;
 using AttachmentApi.Service.Abstracts;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,9 +30,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-IFileProvider physicalProvider = new PhysicalFileProvider(Directory.GetCurrentDirectory());
-builder.Services.AddSingleton<IFileProvider>(physicalProvider);
-
 builder.Services.AddAutoMapper(typeof(MapperProfile));
 
 builder.Services.AddScoped<IAttachmentRepository, AttachmentRepository>();
@@ -40,6 +40,7 @@ builder.Services.AddHostedService<FileCleanupService>();
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseStaticFiles();
 
 app.UseCors(corsPolicyBuilder =>
 {
@@ -48,6 +49,7 @@ app.UseCors(corsPolicyBuilder =>
     corsPolicyBuilder.AllowAnyMethod();
     corsPolicyBuilder.AllowCredentials();
 });
+
 
 if (app.Environment.IsDevelopment())
 {
@@ -64,4 +66,4 @@ await using (var scope = app.Services.CreateAsyncScope())
 app.UseHttpsRedirection();
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();

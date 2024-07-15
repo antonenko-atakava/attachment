@@ -1,20 +1,21 @@
+using System.IO;
+using System.Threading.Tasks;
 using AttachmentApi.Service.Abstracts;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.FileProviders;
+using SystemFile = System.IO.File;
 
 namespace AttachmentApi.Controllers;
 
 [ApiController]
-[Route("api/attachment")]
+[Route("api/[controller]")]
 public class AttachmentController : ControllerBase
 {
     private readonly IAttachmentService _service;
-    private readonly IFileProvider _fileProvider;
 
-    public AttachmentController(IAttachmentService service, IFileProvider fileProvider)
+    public AttachmentController(IAttachmentService service)
     {
         _service = service;
-        _fileProvider = fileProvider;
     }
 
     [HttpGet("get/id/{id}")]
@@ -38,7 +39,10 @@ public class AttachmentController : ControllerBase
         var attachment = await _service.GetById(id);
         var filePath = attachment.FilePath;
 
-        return File(System.IO.File.OpenRead(filePath), "application/octet-stream", Path.GetFileName(filePath));
+        var fileBytes = await SystemFile.ReadAllBytesAsync(filePath);
+        var filename = Path.GetFileName(filePath);
+
+        return File(fileBytes, "application/octet-stream", filename);
     }
 
     [HttpPost("upload")]

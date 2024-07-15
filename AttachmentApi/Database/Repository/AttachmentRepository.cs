@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using AttachmentApi.Database.Models;
 using AttachmentApi.Database.Repository.Abstracts;
 using Microsoft.EntityFrameworkCore;

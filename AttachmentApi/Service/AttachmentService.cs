@@ -1,8 +1,14 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 using AttachmentApi.Database.DTO;
 using AttachmentApi.Database.Models;
 using AttachmentApi.Database.Repository.Abstracts;
 using AttachmentApi.Service.Abstracts;
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 
 namespace AttachmentApi.Service;
 
@@ -10,13 +16,15 @@ public class AttachmentService : IAttachmentService
 {
     private readonly IAttachmentRepository _repository;
     private readonly IMapper _mapper;
+    private readonly IConfiguration _configuration;
 
-    public AttachmentService(IAttachmentRepository repository, IMapper mapper)
+    public AttachmentService(IAttachmentRepository repository, IMapper mapper, IConfiguration configuration)
     {
         _repository = repository;
         _mapper = mapper;
+        _configuration = configuration;
     }
-    
+
     public async Task<AttachmentDto> GetById(int id)
     {
         var attachment = await _repository.GetById(id);
@@ -25,7 +33,7 @@ public class AttachmentService : IAttachmentService
             throw new Exception("[Get attachment by id]: Не удалось вернуть attachment по id. Attachment = null");
 
         var result = _mapper.Map<AttachmentDto>(attachment);
-        
+
         return result;
     }
 
@@ -56,11 +64,11 @@ public class AttachmentService : IAttachmentService
         if (!allowedExtensions.Contains(extension))
             throw new Exception("[Upload file]: недопустимый формат файла.");
 
-        string folderPath = @"C:\Temp";
+        string folderPath = _configuration["FolderFiles:Temp"] ?? throw new NullReferenceException();
         var filePath = Path.Combine(folderPath, fileName);
 
-        using (var stream = new FileStream(filePath, FileMode.Create))
-            await file.CopyToAsync(stream);
+        await using var stream = new FileStream(filePath, FileMode.Create);
+        await file.CopyToAsync(stream);
 
         return filePath;
     }
@@ -70,7 +78,7 @@ public class AttachmentService : IAttachmentService
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
             throw new FileNotFoundException("[Сreate file service]: временный файл не найден.");
 
-        const string pathToFolder = @"C:\FilesManager";
+        string pathToFolder = _configuration["FolderFiles:FileManager"] ?? throw new NullReferenceException();
         DateTime currentDate = DateTime.UtcNow;
 
         string currentFolder = Path.Combine(pathToFolder, currentDate.ToString("yyyy-MM-dd"));
@@ -110,7 +118,7 @@ public class AttachmentService : IAttachmentService
         File.Delete(attachment.FilePath);
 
         await _repository.Delete(attachment);
-        await _repository.SaveAsync();
+         await _repository.SaveAsync();
 
         return true;
     }

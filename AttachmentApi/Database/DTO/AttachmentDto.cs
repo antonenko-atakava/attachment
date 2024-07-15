@@ -1,3 +1,5 @@
+using System;
+
 namespace AttachmentApi.Database.DTO;
 
 public class AttachmentDto

@@ -1,3 +1,5 @@
+using System;
+
 namespace AttachmentApi.Database.Models;
 
 public class Attachment

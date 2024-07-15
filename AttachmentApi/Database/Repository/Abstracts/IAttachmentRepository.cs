@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using AttachmentApi.Database.Models;
 
 namespace AttachmentApi.Database.Repository.Abstracts;
