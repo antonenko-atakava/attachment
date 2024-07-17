@@ -1,7 +1,4 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using AttachmentApi.Database.DTO;
-using Microsoft.AspNetCore.Http;
+using AttachmentApi.DTO;
 
 namespace AttachmentApi.Service.Abstracts;
 

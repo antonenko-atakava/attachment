@@ -1,14 +1,13 @@
-using System.IO;
-using System.Threading.Tasks;
+using AttachmentApi.DTO;
+using AttachmentApi.Request;
 using AttachmentApi.Service.Abstracts;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SystemFile = System.IO.File;
 
 namespace AttachmentApi.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/[controller]/[action]")]
 public class AttachmentController : ControllerBase
 {
     private readonly IAttachmentService _service;
@@ -18,22 +17,14 @@ public class AttachmentController : ControllerBase
         _service = service;
     }
 
-    [HttpGet("get/id/{id}")]
+    [HttpGet("get/{id}")]
     public async Task<IActionResult> GetById(int id)
     {
         var result = await _service.GetById(id);
         return Ok(result);
     }
 
-    [HttpGet("get/page/{page}/size/{size}")]
-    public async Task<IActionResult> Pagination(uint size, uint page)
-    {
-        var result = await _service.Pagination(size, page);
-
-        return Ok(result);
-    }
-
-    [HttpGet("download/id/{id}")]
+    [HttpGet("download/{id}")]
     public async Task<IActionResult> DownloadFile(int id)
     {
         var attachment = await _service.GetById(id);
@@ -45,22 +36,37 @@ public class AttachmentController : ControllerBase
         return File(fileBytes, "application/octet-stream", filename);
     }
 
+    [HttpPost("pagination")]
+    public async Task<IActionResult> Pagination([FromBody] PaginationRequest request)
+    {
+        var result = await _service.Pagination(request.Size, request.Page);
+
+        return Ok(result);
+    }
+
     [HttpPost("upload")]
     [RequestSizeLimit(100 * 1024 * 1024)]
     public async Task<IActionResult> Upload(IFormFile file)
     {
         var upload = await _service.Upload(file);
-        return Ok(upload);
+        return Ok(new
+        {
+            TempAttachmentId = upload
+        });
     }
 
     [HttpPost("create")]
-    public async Task<IActionResult> Create(string request)
+    public async Task<IActionResult> Create([FromBody] CreateRequest requests)
     {
-        var attachment = await _service.Create(request);
-        return Ok(attachment);
+        var attachments = new List<AttachmentDto>();
+
+        foreach (var request in requests.FileIdList)
+            attachments.Add(await _service.Create(request));
+
+        return Ok(attachments);
     }
 
-    [HttpDelete("delete/id/{id}")]
+    [HttpDelete("delete/{id}")]
     public async Task<IActionResult> Delete(int id)
     {
         await _service.Delete(id);

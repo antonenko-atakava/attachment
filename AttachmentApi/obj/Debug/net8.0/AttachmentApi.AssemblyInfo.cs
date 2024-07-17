@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AttachmentApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7b7eb7dded699b9b1f418ee8cc8be0499737d43c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b4c49432c0c290938cbbf77e832bc65f5ce02bdc")]
 [assembly: System.Reflection.AssemblyProductAttribute("AttachmentApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AttachmentApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

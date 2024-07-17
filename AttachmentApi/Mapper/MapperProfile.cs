@@ -1,6 +1,6 @@
-using AttachmentApi.Database.DTO;
-using AttachmentApi.Database.Models;
+using AttachmentApi.DTO;
 using AutoMapper;
+using Database.Database.Entity;
 
 namespace AttachmentApi.Mapper;
 

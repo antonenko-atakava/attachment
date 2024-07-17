@@ -1,16 +1,14 @@
-using System.IO;
-using AttachmentApi.Database;
-using AttachmentApi.Database.Repository;
-using AttachmentApi.Database.Repository.Abstracts;
+using AttachmentApi;
 using AttachmentApi.Mapper;
 using AttachmentApi.Middleware;
 using AttachmentApi.Service;
 using AttachmentApi.Service.Abstracts;
-using Microsoft.AspNetCore.Builder;
+using BackgroundService;
+using Database.Database;
+using Database.Database.Repository;
+using Database.Database.Repository.Abstracts;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,23 +19,45 @@ IConfiguration configuration = new ConfigurationBuilder()
 
 builder.Services.AddSingleton(configuration);
 
-string? connectionString = configuration.GetConnectionString("DefaultConnection");
+var connectionString = configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<DatabaseContext>(options => { options.UseNpgsql(connectionString); });
 
 builder.Services.AddControllers();
+
+builder.Services.AddScoped<IAttachmentRepository, AttachmentRepository>();
+builder.Services.AddScoped<IAttachmentService, AttachmentService>();
+
+builder.Services.Configure<FileCleanupServiceOptions>(builder.Configuration.GetSection("FileCleanupService"));
+builder.Services.Configure<AttachmentServiceOptions>(builder.Configuration.GetSection("AttachmentService"));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddAutoMapper(typeof(MapperProfile));
 
-builder.Services.AddScoped<IAttachmentRepository, AttachmentRepository>();
-builder.Services.AddScoped<IAttachmentService, AttachmentService>();
+builder.Services.AddAttachmentService(options =>
+{
+    options.TempFolder = builder.Configuration["AttachmentService:TempFolder"] ?? throw new NullReferenceException();
+    options.FileManagerFolder =
+        builder.Configuration["AttachmentService:FileManagerFolder"] ?? throw new NullReferenceException();
+});
+builder.Services.AddFileCleanupService(options =>
+{
+    options.TempFolder = builder.Configuration["FileCleanupService:TempFolder"] ?? throw new NullReferenceException();
 
-builder.Services.AddHostedService<FileCleanupService>();
+    var interval = int.Parse(builder.Configuration["FileCleanupService:CleanInterval"]!);
+    var intervalWorker = int.Parse(builder.Configuration["FileCleanupService:CleanIntervalWorker"]!);
+
+    options.CleanInterval = TimeSpan.FromMilliseconds(interval);
+    options.CleanIntervalWorker = TimeSpan.FromMilliseconds(intervalWorker);
+});
 
 var app = builder.Build();
+
+var fileCleanupServiceOptions = app.Services.GetRequiredService<IOptions<FileCleanupServiceOptions>>().Value;
+var attachmentServiceOptions = app.Services.GetRequiredService<IOptions<AttachmentServiceOptions>>().Value;
+ConfigurationValidator.ValidateOptions(fileCleanupServiceOptions, attachmentServiceOptions);
 
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseStaticFiles();

@@ -84,6 +84,10 @@ C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\bin\Debug\net8.0\ru\Mic
 C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.Workspaces.resources.dll
 C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.resources.dll
 C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll
+C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\bin\Debug\net8.0\BackgroundService.dll
+C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\bin\Debug\net8.0\Database.dll
+C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\bin\Debug\net8.0\BackgroundService.pdb
+C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\bin\Debug\net8.0\Database.pdb
 C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\obj\Debug\net8.0\AttachmentApi.csproj.AssemblyReference.cache
 C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\obj\Debug\net8.0\AttachmentApi.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\obj\Debug\net8.0\AttachmentApi.AssemblyInfoInputs.cache
@@ -91,6 +95,7 @@ C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\obj\Debug\net8.0\Attach
 C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\obj\Debug\net8.0\AttachmentApi.csproj.CoreCompileInputs.cache
 C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\obj\Debug\net8.0\AttachmentApi.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\obj\Debug\net8.0\AttachmentApi.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\obj\Debug\net8.0\AttachmentApi.sourcelink.json
 C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\obj\Debug\net8.0\staticwebassets.build.json
 C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\obj\Debug\net8.0\staticwebassets.development.json
 C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\obj\Debug\net8.0\staticwebassets\msbuild.AttachmentApi.Microsoft.AspNetCore.StaticWebAssets.props
@@ -105,4 +110,6 @@ C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\obj\Debug\net8.0\refint
 C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\obj\Debug\net8.0\AttachmentApi.pdb
 C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\obj\Debug\net8.0\AttachmentApi.genruntimeconfig.cache
 C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\obj\Debug\net8.0\ref\AttachmentApi.dll
-C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\obj\Debug\net8.0\AttachmentApi.sourcelink.json
+C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\bin\Debug\net8.0\FluentValidation.dll
+C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\bin\Debug\net8.0\FluentValidation.AspNetCore.dll
+C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\bin\Debug\net8.0\FluentValidation.DependencyInjectionExtensions.dll

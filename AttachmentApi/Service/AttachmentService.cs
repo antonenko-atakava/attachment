@@ -1,14 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using AttachmentApi.Database.DTO;
-using AttachmentApi.Database.Models;
-using AttachmentApi.Database.Repository.Abstracts;
+using AttachmentApi.DTO;
 using AttachmentApi.Service.Abstracts;
 using AutoMapper;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
+using Database.Database.Entity;
+using Database.Database.Repository.Abstracts;
+using Microsoft.Extensions.Options;
 
 namespace AttachmentApi.Service;
 
@@ -16,13 +11,16 @@ public class AttachmentService : IAttachmentService
 {
     private readonly IAttachmentRepository _repository;
     private readonly IMapper _mapper;
-    private readonly IConfiguration _configuration;
+    private readonly IOptions<AttachmentServiceOptions> _options;
+    private readonly ILogger<AttachmentService> _logger;
 
-    public AttachmentService(IAttachmentRepository repository, IMapper mapper, IConfiguration configuration)
+    public AttachmentService(IAttachmentRepository repository, IMapper mapper,
+        IOptions<AttachmentServiceOptions> options, ILogger<AttachmentService> logger)
     {
         _repository = repository;
         _mapper = mapper;
-        _configuration = configuration;
+        _options = options;
+        _logger = logger;
     }
 
     public async Task<AttachmentDto> GetById(int id)
@@ -39,6 +37,9 @@ public class AttachmentService : IAttachmentService
 
     public async Task<ICollection<AttachmentDto>> Pagination(uint size, uint page)
     {
+        if (page == 0 || size == 0)
+            throw new Exception("[Pagination error]:Размер елементов или страница не могут быть значением равным 0");
+
         var attachments = await _repository.Pagination(size, page);
 
         if (attachments.Count <= 0)
@@ -64,24 +65,25 @@ public class AttachmentService : IAttachmentService
         if (!allowedExtensions.Contains(extension))
             throw new Exception("[Upload file]: недопустимый формат файла.");
 
-        string folderPath = _configuration["FolderFiles:Temp"] ?? throw new NullReferenceException();
-        var filePath = Path.Combine(folderPath, fileName);
+        var fileId = Guid.NewGuid().ToString();
+        var filePath = Path.Combine(_options.Value.TempFolder, $"{fileId}{extension}");
 
         await using var stream = new FileStream(filePath, FileMode.Create);
         await file.CopyToAsync(stream);
 
-        return filePath;
+        return fileId;
     }
 
-    public async Task<AttachmentDto> Create(string filePath)
+    public async Task<AttachmentDto> Create(string fileId)
     {
+        var filePath = Directory.GetFiles(_options.Value.TempFolder, fileId + ".*").FirstOrDefault();
+
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
             throw new FileNotFoundException("[Сreate file service]: временный файл не найден.");
 
-        string pathToFolder = _configuration["FolderFiles:FileManager"] ?? throw new NullReferenceException();
-        DateTime currentDate = DateTime.UtcNow;
+        var currentDate = DateTime.UtcNow;
+        var currentFolder = Path.Combine(_options.Value.FileManagerFolder, currentDate.ToString("yyyy-MM-dd"));
 
-        string currentFolder = Path.Combine(pathToFolder, currentDate.ToString("yyyy-MM-dd"));
         Directory.CreateDirectory(currentFolder);
 
         var fileName = Path.GetFileName(filePath);
@@ -118,7 +120,7 @@ public class AttachmentService : IAttachmentService
         File.Delete(attachment.FilePath);
 
         await _repository.Delete(attachment);
-         await _repository.SaveAsync();
+        await _repository.SaveAsync();
 
         return true;
     }
