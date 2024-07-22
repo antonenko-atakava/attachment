@@ -7,13 +7,11 @@ namespace BackgroundService;
 public class FileCleanupService : Microsoft.Extensions.Hosting.BackgroundService
 {
     private readonly IServiceProvider _services;
-    private readonly ILogger<FileCleanupService> _logger;
     private readonly IOptions<FileCleanupServiceOptions> _options;
 
-    public FileCleanupService(IServiceProvider services, ILogger<FileCleanupService> logger,
+    public FileCleanupService(IServiceProvider services,
         IOptions<FileCleanupServiceOptions> options)
     {
-        _logger = logger;
         _services = services;
         _options = options;
     }
@@ -26,30 +24,41 @@ public class FileCleanupService : Microsoft.Extensions.Hosting.BackgroundService
             {
                 if (string.IsNullOrEmpty(_options.Value.TempFolder) || !Directory.Exists(_options.Value.TempFolder))
                 {
-                    _logger.LogError("Указанный путь пуст или папки не существует");
-                    throw new Exception();
+                    throw new Exception("[BG Service clean up error]: ошибка пути или существования иректории");
                 }
 
                 await using var scope = _services.CreateAsyncScope();
-
                 var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 
-                var fileOnDisk = Directory.GetFiles(_options.Value.TempFolder);
+                var directories = Directory.GetDirectories(_options.Value.TempFolder);
 
-                foreach (var filePath in fileOnDisk)
+                foreach (var directory in directories)
                 {
-                    var fileName = Path.GetFileName(filePath);
+                    var files = Directory.GetFiles(directory);
 
-                    var fileInfo = new FileInfo(filePath);
-
-                    var fileInDatabase = await db.Attachments
-                        .FirstOrDefaultAsync(i => i.Extension == fileName, cancellationToken: stoppingToken);
-
-                    if (fileInDatabase == null && fileInfo.LastWriteTime.Add(_options.Value.CleanInterval) <
-                        DateTime.Now)
+                    if (files.Length == 0)
                     {
-                        _logger.LogInformation($"файл {fileInfo.Name} должен удалится");
-                        File.Delete(filePath);
+                        Directory.Delete(directory, true);
+                        continue;
+                    }
+
+                    foreach (var filePath in files)
+                    {
+                        var fileInfo = new FileInfo(filePath);
+
+                        var fileInDatabase = await db.Attachments
+                            .FirstOrDefaultAsync(i => i.FilePath == filePath, cancellationToken: stoppingToken);
+
+                        if (fileInDatabase == null &&
+                            fileInfo.LastWriteTime.Add(_options.Value.CleanInterval) < DateTime.Now)
+                        {
+                            File.Delete(filePath);
+                        }
+                    }
+
+                    if (Directory.GetFiles(directory).Length == 0)
+                    {
+                        Directory.Delete(directory, true);
                     }
                 }
             }

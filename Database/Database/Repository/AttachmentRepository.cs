@@ -1,6 +1,7 @@
 using Database.Database.Entity;
 using Database.Database.Repository.Abstracts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Database.Database.Repository;
 
@@ -13,7 +14,7 @@ public class AttachmentRepository : IAttachmentRepository
         _db = db;
     }
 
-    public async Task<Attachment?> GetById(int id)
+    public async Task<Attachment?> GetById(string id)
     {
         return await _db.Attachments
             .AsNoTracking()
@@ -50,5 +51,20 @@ public class AttachmentRepository : IAttachmentRepository
     public async Task SaveAsync()
     {
         await _db.SaveChangesAsync();
+    }
+
+    public async Task<IDbContextTransaction> BeginTransactionAsync()
+    {
+        return await _db.Database.BeginTransactionAsync();
+    }
+
+    public async Task CommitTransactionAsync(IDbContextTransaction transaction)
+    {
+        await transaction.CommitAsync();
+    }
+
+    public async Task RollbackTransactionAsync(IDbContextTransaction transaction)
+    {
+        await transaction.RollbackAsync();
     }
 }

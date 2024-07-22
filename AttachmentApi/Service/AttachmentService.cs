@@ -3,6 +3,7 @@ using AttachmentApi.Service.Abstracts;
 using AutoMapper;
 using Database.Database.Entity;
 using Database.Database.Repository.Abstracts;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Options;
 
 namespace AttachmentApi.Service;
@@ -23,7 +24,7 @@ public class AttachmentService : IAttachmentService
         _logger = logger;
     }
 
-    public async Task<AttachmentDto> GetById(int id)
+    public async Task<AttachmentDto> GetById(string id)
     {
         var attachment = await _repository.GetById(id);
 
@@ -59,27 +60,38 @@ public class AttachmentService : IAttachmentService
             { ".jpg", ".png", ".txt", ".pdf", ".docx", ".xls", ".xlsx", ".pptx", ".sig", ".csv" };
 
         var fileName = Path.GetFileName(file.FileName);
-
         var extension = Path.GetExtension(fileName).ToLowerInvariant();
 
         if (!allowedExtensions.Contains(extension))
             throw new Exception("[Upload file]: недопустимый формат файла.");
 
-        var fileId = Guid.NewGuid().ToString();
-        var filePath = Path.Combine(_options.Value.TempFolder, $"{fileId}{extension}");
+        var guid = Guid.NewGuid().ToString();
 
-        await using var stream = new FileStream(filePath, FileMode.Create);
-        await file.CopyToAsync(stream);
+        var folderPath = Path.Combine(_options.Value.TempFolder, guid);
+        Directory.CreateDirectory(folderPath);
 
-        return fileId;
+        var filePath = Path.Combine(folderPath, fileName);
+
+        await using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        return guid;
     }
 
-    public async Task<AttachmentDto> Create(string fileId)
+    
+    public async Task<AttachmentDto> Create(string fileId, IDbContextTransaction transaction)
     {
-        var filePath = Directory.GetFiles(_options.Value.TempFolder, fileId + ".*").FirstOrDefault();
+        var tempFolderPath = Path.Combine(_options.Value.TempFolder, fileId);
+
+        if (!Directory.Exists(tempFolderPath))
+            throw new DirectoryNotFoundException("[Create file service]: временная директория не найдена.");
+
+        var filePath = Directory.GetFiles(tempFolderPath).FirstOrDefault();
 
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
-            throw new FileNotFoundException("[Сreate file service]: временный файл не найден.");
+            throw new FileNotFoundException("[Create file service]: временный файл не найден.");
 
         var currentDate = DateTime.UtcNow;
         var currentFolder = Path.Combine(_options.Value.FileManagerFolder, currentDate.ToString("yyyy-MM-dd"));
@@ -87,15 +99,20 @@ public class AttachmentService : IAttachmentService
         Directory.CreateDirectory(currentFolder);
 
         var fileName = Path.GetFileName(filePath);
-        var newFilePath = Path.Combine(currentFolder, fileName);
-
+        var fileExtension = Path.GetExtension(filePath);
+        var newFileName = $"{fileId}{fileExtension}";
+        var newFilePath = Path.Combine(currentFolder, newFileName);
+        
         File.Move(filePath, newFilePath);
+
+        Directory.Delete(tempFolderPath, true);
 
         var fileInfo = new FileInfo(newFilePath);
 
         var attachment = new Attachment
         {
-            Extension = fileInfo.Name,
+            Id = fileId,
+            Extension = fileName,
             FilePath = newFilePath,
             FileSize = fileInfo.Length,
             CreateAt = DateTime.UtcNow,
@@ -110,7 +127,7 @@ public class AttachmentService : IAttachmentService
         return attachmentDto;
     }
 
-    public async Task<bool> Delete(int id)
+    public async Task<bool> Delete(string id)
     {
         var attachment = await _repository.GetById(id);
 

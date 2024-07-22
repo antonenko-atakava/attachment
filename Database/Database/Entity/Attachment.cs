@@ -2,7 +2,7 @@ namespace Database.Database.Entity;
 
 public class Attachment
 {
-    public int Id { get; set; }
+    public string Id { get; set; }
     public string Extension { get; set; }
     public long FileSize { get; set; }
     public string FilePath { get; set; }

@@ -2,6 +2,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AttachmentApi", "AttachmentApi\AttachmentApi.csproj", "{3D952180-6C38-423C-97F7-75DCBC9E5171}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BackgroundService", "BackgroundService\BackgroundService.csproj", "{F51D8361-BB9E-49EF-878A-AEC66A8A245B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Database", "Database\Database.csproj", "{2BFCF72C-7476-46D9-9BD8-5C4590C9EBB2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +16,13 @@ Global
 		{3D952180-6C38-423C-97F7-75DCBC9E5171}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D952180-6C38-423C-97F7-75DCBC9E5171}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3D952180-6C38-423C-97F7-75DCBC9E5171}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F51D8361-BB9E-49EF-878A-AEC66A8A245B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F51D8361-BB9E-49EF-878A-AEC66A8A245B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F51D8361-BB9E-49EF-878A-AEC66A8A245B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F51D8361-BB9E-49EF-878A-AEC66A8A245B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2BFCF72C-7476-46D9-9BD8-5C4590C9EBB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BFCF72C-7476-46D9-9BD8-5C4590C9EBB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BFCF72C-7476-46D9-9BD8-5C4590C9EBB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BFCF72C-7476-46D9-9BD8-5C4590C9EBB2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

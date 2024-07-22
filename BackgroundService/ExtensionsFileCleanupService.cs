@@ -1,6 +1,6 @@
 namespace BackgroundService;
 
-public static class Extensions
+public static class ExtensionsFileCleanupService
 {
     public static IServiceCollection AddFileCleanupService(this IServiceCollection services,
         Action<FileCleanupServiceOptions>? configure = null)

@@ -113,3 +113,4 @@ C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\obj\Debug\net8.0\ref\At
 C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\bin\Debug\net8.0\FluentValidation.dll
 C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\bin\Debug\net8.0\FluentValidation.AspNetCore.dll
 C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\bin\Debug\net8.0\FluentValidation.DependencyInjectionExtensions.dll
+C:\Users\vgama\RiderProjects\AttachmentApi\AttachmentApi\bin\Debug\net8.0\Microsoft.Extensions.Options.dll

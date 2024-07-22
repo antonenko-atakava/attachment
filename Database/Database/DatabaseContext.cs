@@ -18,7 +18,7 @@ public class DatabaseContext : DbContext
             entity.ToTable("attachment");
 
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
+            entity.Property(e => e.Id).HasColumnName("id").HasDefaultValueSql("gen_random_uuid()").IsRequired();
             entity.Property(e => e.Extension).HasColumnName("extension").IsRequired();
             entity.Property(e => e.FileSize).HasColumnName("file_size").IsRequired();
             entity.Property(e => e.FilePath).HasColumnName("file_path").IsRequired();

@@ -1,37 +1,40 @@
 using AttachmentApi.DTO;
 using AttachmentApi.Request;
 using AttachmentApi.Service.Abstracts;
+using Database.Database.Repository.Abstracts;
 using Microsoft.AspNetCore.Mvc;
 using SystemFile = System.IO.File;
 
 namespace AttachmentApi.Controllers;
 
 [ApiController]
-[Route("api/[controller]/[action]")]
+[Route("api/[controller]")]
 public class AttachmentController : ControllerBase
 {
     private readonly IAttachmentService _service;
+    private readonly IAttachmentRepository _repository;
 
-    public AttachmentController(IAttachmentService service)
+    public AttachmentController(IAttachmentService service, IAttachmentRepository repository)
     {
         _service = service;
+        _repository = repository;
     }
 
-    [HttpGet("get/{id}")]
-    public async Task<IActionResult> GetById(int id)
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(string id)
     {
         var result = await _service.GetById(id);
         return Ok(result);
     }
 
-    [HttpGet("download/{id}")]
-    public async Task<IActionResult> DownloadFile(int id)
+    [HttpGet("{id}/dowload")]
+    public async Task<IActionResult> DownloadFile(string id)
     {
         var attachment = await _service.GetById(id);
         var filePath = attachment.FilePath;
 
         var fileBytes = await SystemFile.ReadAllBytesAsync(filePath);
-        var filename = Path.GetFileName(filePath);
+        var filename = attachment.Extension;
 
         return File(fileBytes, "application/octet-stream", filename);
     }
@@ -58,16 +61,28 @@ public class AttachmentController : ControllerBase
     [HttpPost("create")]
     public async Task<IActionResult> Create([FromBody] CreateRequest requests)
     {
-        var attachments = new List<AttachmentDto>();
+        using (var transaction = await _repository.BeginTransactionAsync())
+        {
+            try
+            {
+                var attachments = new List<AttachmentDto>();
 
-        foreach (var request in requests.FileIdList)
-            attachments.Add(await _service.Create(request));
+                foreach (var fileId in requests.FileIdList)
+                    attachments.Add(await _service.Create(fileId, transaction));
 
-        return Ok(attachments);
+                await _repository.CommitTransactionAsync(transaction);
+                return Ok(attachments);
+            }
+            catch (Exception e)
+            {
+                await _repository.RollbackTransactionAsync(transaction);
+                return BadRequest("Произошла ошибка при сохранении файлов.");
+            }
+        }
     }
 
-    [HttpDelete("delete/{id}")]
-    public async Task<IActionResult> Delete(int id)
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(string id)
     {
         await _service.Delete(id);
         return NoContent();

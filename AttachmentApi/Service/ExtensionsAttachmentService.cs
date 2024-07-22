@@ -4,7 +4,7 @@ using Database.Database.Repository.Abstracts;
 
 namespace AttachmentApi.Service;
 
-public static class Extensions
+public static class ExtensionsAttachmentService
 {
     public static IServiceCollection AddAttachmentService(this IServiceCollection services,
         Action<AttachmentServiceOptions>? configure = null)
